@@ -1,0 +1,56 @@
+:root{
+  --bg:#f7f7fb;
+  --card:#ffffff;
+  --muted:#666;
+}
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:0;background:var(--bg);color:#111}
+/* Set the podcast player card to use the image as its background (not the whole page).
+  Use a light translucent overlay so text remains readable on top of the image. */
+.container{max-width:900px;margin:36px auto;padding:20px;background:linear-gradient(rgba(255,255,255,0.80), rgba(255,255,255,0.80)), url('/images/bassplayer.jpg') center/cover no-repeat;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,0.08)}
+/* make the image more visible: reduce overlay opacity and use a gentler blur */
+.container{
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+h1{margin:0 0 12px}
+#controls{display:flex;gap:8px;margin-bottom:16px}
+/* main buttons: dark mauve */
+/* brighter mauve for more luminosity */
+button{background:#8f3fa8;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+button:hover{filter:brightness(1.03)}
+button:focus{outline:2px solid rgba(143,63,168,0.28);outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
+#list{border:1px solid #eee;padding:12px;border-radius:8px;min-height:80px}
+.row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed #f0f0f0;position:relative}
+.row:last-child{border-bottom:0}
+label{flex:1}
+.empty{color:var(--muted)}
+/* Modern preference color when supported */
+#checkboxes input[type="checkbox"]{accent-color:#8f3fa8}
+
+/* Custom-styled checkboxes (fallback and consistent look across browsers).
+  Structure: <input id="cb-N"> <label for="cb-N">Title</label>
+  We hide the native box visually and draw our own in label::before.
+*/
+#list label{display:flex;align-items:center;position:relative;padding-left:36px;cursor:pointer;z-index:2}
+/* position the native input absolutely inside the row so it doesn't cover pseudo-elements in Firefox */
+input[type="checkbox"]{position:absolute;left:8px;top:50%;transform:translateY(-50%);opacity:0;width:18px;height:18px;margin:0;z-index:1}
+#list label::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,0.12);background:#faf5fc;border-color:rgba(143,63,168,0.14);box-sizing:border-box;z-index:2;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+
+/* prepare the tick pseudo-element so it's always present (hidden by default)
+  and has higher stacking order so it appears above the box. */
+#list label::after{content:'';position:absolute;left:6px;top:50%;transform:translateY(-50%) rotate(45deg) scale(0.9);width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;opacity:0;z-index:3;pointer-events:none;transition:opacity .12s ease,transform .12s ease}
+
+/* checked state: mauve background and visible white tick */
+/* keep previous selector for browsers that support it, and also support label.checked for robustness */
+input[type="checkbox"]:checked + label::before{background:#8f3fa8;border-color:#8f3fa8}
+input[type="checkbox"]:checked + label::after{opacity:1;transform:translateY(-50%) rotate(45deg) scale(1)}
+#list label.checked::before{background:#8f3fa8;border-color:#8f3fa8}
+#list label.checked::after{opacity:1;transform:translateY(-50%) rotate(45deg) scale(1)}
+
+/* focus ring on keyboard focus */
+input[type="checkbox"]:focus + label::before{outline:2px solid rgba(143,63,168,0.18);outline-offset:2px}
+#playerSection{margin-top:18px}
+#now{margin-bottom:8px;color:var(--muted)}
+code{background:#fafafa;padding:2px 6px;border-radius:4px;border:1px solid #f0f0f0}

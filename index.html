@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Razorcake's Podcats</title>
+    <link rel="stylesheet" href="/public/style.css">
+  </head>
+  <body>
+    <main class="container">
+     
+      <section id="controls">
+        <button id="playSelected">Play selected</button>
+        <button id="stop" disabled>Stop</button>
+      </section>
+
+      <section id="listSection">
+        <div id="list">Loading...</div>
+      </section>
+
+      <section id="playerSection">
+        <div id="now">No file playing</div>
+        <audio id="player" controls></audio>
+      </section>
+    </main>
+
+    <script src="/public/script.js"></script>
+  </body>
+</html>
