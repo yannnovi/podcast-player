@@ -4,17 +4,57 @@ document.addEventListener('DOMContentLoaded', () => {
   const stopBtn = document.getElementById('stop');
   const player = document.getElementById('player');
   const now = document.getElementById('now');
+  const fileCount = document.getElementById('fileCount');
+  const itemsPerPageSelect = document.getElementById('itemsPerPage');
+  const prevPageBtn = document.getElementById('prevPage');
+  const nextPageBtn = document.getElementById('nextPage');
+  const pageInfo = document.getElementById('pageInfo');
 
   let playlist = [];
   let currentIndex = -1;
+  let currentPage = 1;
+  let totalPages = 1;
+  let totalFiles = 0;
 
   function formatName(name) {
     try { return decodeURIComponent(name); } catch(e){ return name; }
   }
 
-  function renderList(items) {
+  function formatFileSize(bytes) {
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 B';
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  function formatDate(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function renderList(data) {
+    const items = data.files;
+    const pagination = data.pagination;
+    
+    // Update pagination info
+    currentPage = pagination.page;
+    totalPages = pagination.totalPages;
+    totalFiles = pagination.totalFiles;
+    
+    // Update UI elements
+    fileCount.textContent = `${totalFiles} podcast files total`;
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    prevPageBtn.disabled = !pagination.hasPrev;
+    nextPageBtn.disabled = !pagination.hasNext;
+
     if (!items.length) {
-      listEl.innerHTML = '<div class="empty">No Podcasts files found in the <code>podcasts/</code> folder</div>';
+      listEl.innerHTML = '<div class="empty">No Podcast files found in the <code>podcasts/</code> folder</div>';
       return;
     }
 
@@ -30,19 +70,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const label = document.createElement('label');
       label.htmlFor = cb.id;
-      label.textContent = it.name;
+      
+      const title = document.createElement('div');
+      title.className = 'file-title';
+      title.textContent = it.name;
+      
+      const meta = document.createElement('div');
+      meta.className = 'file-meta';
+      meta.textContent = `Modified ${formatDate(it.mtime)} • ${formatFileSize(it.size)}`;
+      
+      label.appendChild(title);
+      label.appendChild(meta);
+
+      const playSingle = document.createElement('button');
+      playSingle.textContent = '▶';
+      playSingle.title = 'Play only this file';
+      playSingle.addEventListener('click', () => {
+        playlist = [it.url];
+        startPlaylist(0);
+      });
 
       // keep label state in sync for browsers where CSS sibling selectors may be inconsistent
       cb.addEventListener('change', () => {
         label.classList.toggle('checked', cb.checked);
-      });
-
-      const playSingle = document.createElement('button');
-      playSingle.textContent = '▶';
-  playSingle.title = 'Play only this file';
-      playSingle.addEventListener('click', () => {
-        playlist = [it.url];
-        startPlaylist(0);
       });
 
       row.appendChild(cb);
@@ -58,11 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadList() {
     listEl.textContent = 'Loading...';
     try {
-      const res = await fetch('/api/podcasts');
-      const items = await res.json();
-      renderList(items);
+      const itemsPerPage = itemsPerPageSelect.value;
+      const res = await fetch(`/api/podcasts?page=${currentPage}&limit=${itemsPerPage}`);
+      const data = await res.json();
+      renderList(data);
     } catch (err) {
-      listEl.textContent = 'Error while fetching files.';
+      listEl.textContent = 'Error loading files.';
       console.error(err);
     }
   }
@@ -86,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function playIndex(i) {
     if (i < 0 || i >= playlist.length) {
-      now.textContent = 'Lecture terminée.';
+      now.textContent = 'Playback finished.';
       player.src = '';
       currentIndex = -1;
       stopBtn.disabled = true;
@@ -95,9 +146,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const url = playlist[i];
     player.src = url;
-    player.play().catch(err => console.warn('Impossible de jouer:', err));
+    player.play().catch(err => console.warn('Unable to play:', err));
     now.textContent = 'Now playing: ' + (formatName(url.replace('/podcasts/','')));
   }
+
+  // Event listeners for pagination
+  prevPageBtn.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage--;
+      loadList();
+    }
+  });
+
+  nextPageBtn.addEventListener('click', () => {
+    if (currentPage < totalPages) {
+      currentPage++;
+      loadList();
+    }
+  });
+
+  itemsPerPageSelect.addEventListener('change', () => {
+    currentPage = 1; // Reset to first page when changing items per page
+    loadList();
+  });
 
   player.addEventListener('ended', () => {
     if (currentIndex === -1) return;
@@ -117,6 +188,19 @@ document.addEventListener('DOMContentLoaded', () => {
   playBtn.addEventListener('click', () => {
     playlist = []; // force rebuild from selected
     startPlaylist(0);
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    
+    if (e.key === 'ArrowLeft' && !prevPageBtn.disabled) {
+      e.preventDefault();
+      prevPageBtn.click();
+    } else if (e.key === 'ArrowRight' && !nextPageBtn.disabled) {
+      e.preventDefault();
+      nextPageBtn.click();
+    }
   });
 
   // initial load

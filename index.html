@@ -8,6 +8,17 @@
   </head>
   <body>
     <main class="container">
+      <section id="info">
+        <div id="fileCount">Loading...</div>
+        <div id="pagination-controls">
+          <select id="itemsPerPage">
+            <option value="5">5 per page</option>
+            <option value="10" selected>10 per page</option>
+            <option value="20">20 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+        </div>
+      </section>
      
       <section id="controls">
         <button id="playSelected">Play selected</button>
@@ -16,6 +27,11 @@
 
       <section id="listSection">
         <div id="list">Loading...</div>
+        <div id="pagination">
+          <button id="prevPage" disabled>← Previous</button>
+          <span id="pageInfo">Page 1 of 1</span>
+          <button id="nextPage" disabled>Next →</button>
+        </div>
       </section>
 
       <section id="playerSection">

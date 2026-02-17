@@ -20,11 +20,14 @@ if (fs.existsSync(IMAGES_DIR)) {
   app.use('/images', express.static(IMAGES_DIR));
 }
 
-// API: list mp3 files in podcasts directory
+// API: list mp3 files in podcasts directory with pagination
 app.get('/api/podcasts', (req, res) => {
   if (!fs.existsSync(PODCASTS_DIR)) {
-    return res.json([]);
+    return res.json({ files: [], pagination: { page: 1, totalPages: 0, totalFiles: 0, itemsPerPage: 10 } });
   }
+
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const itemsPerPage = Math.max(1, Math.min(50, parseInt(req.query.limit) || 10));
 
   fs.readdir(PODCASTS_DIR, (err, files) => {
     if (err) return res.status(500).json({ error: 'Unable to read podcasts directory' });
@@ -36,22 +39,41 @@ app.get('/api/podcasts', (req, res) => {
     const statsPromises = mp3Files.map(f => new Promise((resolve) => {
       fs.stat(path.join(PODCASTS_DIR, f), (sErr, stat) => {
         if (sErr) return resolve(null);
-        resolve({ name: f, mtime: stat.mtimeMs });
+        resolve({ name: f, mtime: stat.mtimeMs, size: stat.size });
       });
     }));
 
     Promise.all(statsPromises).then(results => {
-      const mp3s = results
+      const allMp3s = results
         .filter(Boolean)
-        .sort((a, b) => b.mtime - a.mtime) // most recent first
-        .slice(0, 6) // only keep the 6 most recent
+        .sort((a, b) => b.mtime - a.mtime); // most recent first
+      
+      const totalFiles = allMp3s.length;
+      const totalPages = Math.ceil(totalFiles / itemsPerPage);
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      
+      const paginatedMp3s = allMp3s
+        .slice(startIndex, endIndex)
         .map(item => ({
           name: item.name,
-          url: '/podcasts/' + encodeURIComponent(item.name)
+          url: '/podcasts/' + encodeURIComponent(item.name),
+          mtime: new Date(item.mtime).toISOString(),
+          size: item.size
         }));
 
-      res.json(mp3s);
-    }).catch(() => res.json([]));
+      res.json({
+        files: paginatedMp3s,
+        pagination: {
+          page,
+          totalPages,
+          totalFiles,
+          itemsPerPage,
+          hasNext: page < totalPages,
+          hasPrev: page > 1
+        }
+      });
+    }).catch(() => res.json({ files: [], pagination: { page: 1, totalPages: 0, totalFiles: 0, itemsPerPage } }));
   });
 });
 

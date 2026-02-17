@@ -14,18 +14,33 @@ body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;
   backdrop-filter: blur(3px);
 }
 h1{margin:0 0 12px}
+
+/* Info section with file count and items per page */
+#info{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:8px 0}
+#fileCount{color:var(--muted);font-size:0.9em;}
+#pagination-controls select{padding:4px 8px;border:1px solid #ddd;border-radius:4px;background:white}
+
 #controls{display:flex;gap:8px;margin-bottom:16px}
 /* main buttons: dark mauve */
 /* brighter mauve for more luminosity */
-button{background:#8f3fa8;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
-button:hover{filter:brightness(1.03)}
+button{background:#8f3fa8;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:0.9em}
+button:hover{filter:brightness(1.15)}
 button:focus{outline:2px solid rgba(143,63,168,0.28);outline-offset:2px}
 button:disabled{opacity:.5;cursor:not-allowed}
 #list{border:1px solid #eee;padding:12px;border-radius:8px;min-height:80px}
-.row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px dashed #f0f0f0;position:relative}
+.row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #f0f0f0;position:relative}
 .row:last-child{border-bottom:0}
 label{flex:1}
 .empty{color:var(--muted)}
+
+/* File metadata styles */
+.file-title{font-weight:500;margin-bottom:2px}
+.file-meta{font-size:0.8em;color:var(--muted)}
+
+/* Pagination styles */
+#pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:16px;padding:12px 0}
+#pageInfo{color:var(--muted);font-size:0.9em;min-width:100px;text-align:center}
+
 /* Modern preference color when supported */
 #checkboxes input[type="checkbox"]{accent-color:#8f3fa8}
 
@@ -33,7 +48,7 @@ label{flex:1}
   Structure: <input id="cb-N"> <label for="cb-N">Title</label>
   We hide the native box visually and draw our own in label::before.
 */
-#list label{display:flex;align-items:center;position:relative;padding-left:36px;cursor:pointer;z-index:2}
+#list label{display:flex;flex-direction:column;align-items:flex-start;position:relative;padding-left:36px;cursor:pointer;z-index:2}
 /* position the native input absolutely inside the row so it doesn't cover pseudo-elements in Firefox */
 input[type="checkbox"]{position:absolute;left:8px;top:50%;transform:translateY(-50%);opacity:0;width:18px;height:18px;margin:0;z-index:1}
 #list label::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:4px;border:1px solid rgba(0,0,0,0.12);background:#faf5fc;border-color:rgba(143,63,168,0.14);box-sizing:border-box;z-index:2;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
