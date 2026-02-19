@@ -5,10 +5,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const player = document.getElementById('player');
   const now = document.getElementById('now');
   const fileCount = document.getElementById('fileCount');
-  const itemsPerPageSelect = document.getElementById('itemsPerPage');
   const prevPageBtn = document.getElementById('prevPage');
   const nextPageBtn = document.getElementById('nextPage');
   const pageInfo = document.getElementById('pageInfo');
+  const ITEMS_PER_PAGE = 5;
+  
+  // Modal elements
+  const modal = document.getElementById('detailsModal');
+  const closeBtn = document.querySelector('.close');
+  const detailsTitle = document.getElementById('detailsTitle');
+  const detailsBody = document.getElementById('detailsBody');
 
   let playlist = [];
   let currentIndex = -1;
@@ -36,6 +42,33 @@ document.addEventListener('DOMContentLoaded', () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  function showModal(title, content) {
+    detailsTitle.textContent = title;
+    detailsBody.textContent = content;
+    modal.classList.add('show');
+  }
+
+  function closeModal() {
+    modal.classList.remove('show');
+  }
+
+  async function fetchDetails(filename) {
+    const nameWithoutExt = filename.replace(/\.[^.]+$/, '');
+    const descFilename = nameWithoutExt + '.desc';
+    
+    try {
+      const response = await fetch(`/podcasts/${descFilename}`);
+      if (!response.ok) {
+        return 'No details available for this file.';
+      }
+      const content = await response.text();
+      return content;
+    } catch (err) {
+      console.error('Error loading .desc file:', err);
+      return 'Error loading content.'
+    }
   }
 
   function renderList(data) {
@@ -90,6 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
         startPlaylist(0);
       });
 
+      const detailsBtn = document.createElement('button');
+      detailsBtn.textContent = 'ℹ';
+      detailsBtn.title = 'Show details';
+      detailsBtn.style.marginLeft = '-4px';
+      detailsBtn.addEventListener('click', async () => {
+        const content = await fetchDetails(it.name);
+        showModal(it.name, content);
+      });
+
       // keep label state in sync for browsers where CSS sibling selectors may be inconsistent
       cb.addEventListener('change', () => {
         label.classList.toggle('checked', cb.checked);
@@ -98,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
       row.appendChild(cb);
       row.appendChild(label);
       row.appendChild(playSingle);
+      row.appendChild(detailsBtn);
       frag.appendChild(row);
     });
 
@@ -108,8 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadList() {
     listEl.textContent = 'Loading...';
     try {
-      const itemsPerPage = itemsPerPageSelect.value;
-      const res = await fetch(`/api/podcasts?page=${currentPage}&limit=${itemsPerPage}`);
+      const res = await fetch(`/api/podcasts?page=${currentPage}&limit=${ITEMS_PER_PAGE}`);
       const data = await res.json();
       renderList(data);
     } catch (err) {
@@ -165,10 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  itemsPerPageSelect.addEventListener('change', () => {
-    currentPage = 1; // Reset to first page when changing items per page
-    loadList();
-  });
+
 
   player.addEventListener('ended', () => {
     if (currentIndex === -1) return;
@@ -190,6 +229,21 @@ document.addEventListener('DOMContentLoaded', () => {
     startPlaylist(0);
   });
 
+  // Modal event listeners
+  closeBtn.addEventListener('click', closeModal);
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+
   // Keyboard navigation
   document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
@@ -206,3 +260,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // initial load
   loadList();
 });
+

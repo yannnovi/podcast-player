@@ -10,14 +10,6 @@
     <main class="container">
       <section id="info">
         <div id="fileCount">Loading...</div>
-        <div id="pagination-controls">
-          <select id="itemsPerPage">
-            <option value="5">5 per page</option>
-            <option value="10" selected>10 per page</option>
-            <option value="20">20 per page</option>
-            <option value="50">50 per page</option>
-          </select>
-        </div>
       </section>
      
       <section id="controls">
@@ -39,6 +31,15 @@
         <audio id="player" controls></audio>
       </section>
     </main>
+
+    <!-- Details popup -->
+    <div id="detailsModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="detailsTitle"></h2>
+        <div id="detailsBody" class="details-text"></div>
+      </div>
+    </div>
 
     <script src="/public/script.js"></script>
   </body>
