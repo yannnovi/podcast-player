@@ -1,0 +1,29 @@
+services:
+  podcast-player:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: podcast-player
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      # Monter le dossier podcasts pour pouvoir ajouter des fichiers sans rebuilder
+      - ./podcasts:/app/podcasts:ro
+      # Monter le dossier images
+      - ./images:/app/images:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - podcast-network
+
+networks:
+  podcast-network:
+    driver: bridge

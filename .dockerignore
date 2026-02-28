@@ -1,0 +1,43 @@
+# Dépendances
+node_modules
+npm-debug.log
+yarn-error.log
+yarn.lock
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+.env.local
+.env.*.local
+
+# IDE et éditeurs
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Documentation
+README.md
+*.md
+
+# Fichiers de test
+test
+tests
+*.test.js
+*.spec.js
+
+# Fichiers temporaires
+tmp
+temp
+*.tmp
+*.log
