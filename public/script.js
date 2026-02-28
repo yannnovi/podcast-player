@@ -48,10 +48,14 @@ document.addEventListener('DOMContentLoaded', () => {
     detailsTitle.textContent = title;
     detailsBody.textContent = content;
     modal.classList.add('show');
+    // Prevent body scroll on mobile when modal is open
+    document.body.style.overflow = 'hidden';
   }
 
   function closeModal() {
     modal.classList.remove('show');
+    // Restore body scroll
+    document.body.style.overflow = '';
   }
 
   async function fetchDetails(filename) {
@@ -118,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const playSingle = document.createElement('button');
       playSingle.textContent = '▶';
       playSingle.title = 'Play only this file';
+      playSingle.className = 'action-btn play-btn';
       playSingle.addEventListener('click', () => {
         playlist = [it.url];
         startPlaylist(0);
@@ -126,11 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const detailsBtn = document.createElement('button');
       detailsBtn.textContent = 'ℹ';
       detailsBtn.title = 'Show details';
-      detailsBtn.style.marginLeft = '-4px';
+      detailsBtn.className = 'action-btn details-btn';
       detailsBtn.addEventListener('click', async () => {
         const content = await fetchDetails(it.name);
         showModal(it.name, content);
       });
+      
+      // Create button wrapper for better mobile layout
+      const buttonWrapper = document.createElement('div');
+      buttonWrapper.className = 'button-wrapper';
+      buttonWrapper.appendChild(playSingle);
+      buttonWrapper.appendChild(detailsBtn);
 
       // keep label state in sync for browsers where CSS sibling selectors may be inconsistent
       cb.addEventListener('change', () => {
@@ -139,8 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       row.appendChild(cb);
       row.appendChild(label);
-      row.appendChild(playSingle);
-      row.appendChild(detailsBtn);
+      row.appendChild(buttonWrapper);
       frag.appendChild(row);
     });
 
